@@ -1,0 +1,73 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build(sln)",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/src/src.sln",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "type": "docker-build",
+            "label": "docker-build: debug (WEB)",
+            "dependsOn": [
+                "build"
+            ],
+            "dockerBuild": {
+                "tag": "src:dev",
+                "target": "base",
+                "dockerfile": "${workspaceFolder}/src/web/Dockerfile",
+                "context": "${workspaceFolder}",
+                "pull": true
+            },
+            "netCore": {
+                "appProject": "${workspaceFolder}/src/web/web.csproj"
+            }
+        },
+        {
+            "type": "docker-build",
+            "label": "docker-build: release (WEB)",
+            "dependsOn": [
+                "build"
+            ],
+            "dockerBuild": {
+                "tag": "src:latest",
+                "dockerfile": "${workspaceFolder}/src/web/Dockerfile",
+                "context": "${workspaceFolder}",
+                "pull": true
+            },
+            "netCore": {
+                "appProject": "${workspaceFolder}/src/web/web.csproj"
+            }
+        },
+        {
+            "type": "docker-run",
+            "label": "docker-run: debug (WEB)",
+            "dependsOn": [
+                "docker-build: debug"
+            ],
+            "dockerRun": {},
+            "netCore": {
+                "appProject": "${workspaceFolder}/src/web/web.csproj",
+                "enableDebugging": true
+            }
+        },
+        {
+            "type": "docker-run",
+            "label": "docker-run: release (WEB)",
+            "dependsOn": [
+                "docker-build: release"
+            ],
+            "dockerRun": {},
+            "netCore": {
+                "appProject": "${workspaceFolder}/src/web/web.csproj"
+            }
+        }
+    ]
+}

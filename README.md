@@ -26,5 +26,12 @@ https://docs.microsoft.com/en-us/dotnet/architecture/microservices/multi-contain
 Dapr with Docker Compose
 https://github.com/dapr/samples/tree/master/hello-docker-compose
 
+Dapr introduction (.net cof 2020)
+https://www.youtube.com/watch?v=g-gOlkD9lKs&feature=emb_logo
+
 Project Tye
 https://github.com/dotnet/tye
+
+## Visual Studio Code - docker tools/debug:
+
+https://code.visualstudio.com/docs/containers/docker-compose
