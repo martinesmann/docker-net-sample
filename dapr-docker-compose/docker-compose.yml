@@ -4,20 +4,13 @@ version: "3.7"
 
 services:
   website:
-    depends_on:
-      - placement
-      #- redis
-      #- db
-    image: web
-    container_name: website
+    container_name: sample_website
     build:
       context: ./src/web
       dockerfile: Dockerfile
     ports:
       - "443:5003"
       - "80:5002"
-    networks:
-      - counter-net
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=https://+:5003;http://+:5002
@@ -45,21 +38,15 @@ services:
     volumes:
       - "./components/local:/dapr/components"
       - "./components/config.yaml:/dapr/config.yaml"
-      - ./vault_dev_token:/vault/token
     depends_on:
-      - website
       - placement
+      - website
     network_mode: "service:website"
     env_file:
       - .env
 
   api:
-    depends_on:
-      - placement
-      #- redis
-      #- db
-    image: api
-    container_name: api
+    container_name: sample_api
     build:
       context: ./src/api
       dockerfile: Dockerfile
@@ -67,8 +54,8 @@ services:
       - 5000
     ports:
       - "5000:5000"
-    networks:
-      - counter-net
+    #networks:
+    #  - counter-net
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:5000
@@ -81,7 +68,7 @@ services:
       [
         "./daprd",
         "-app-id",
-        "website",
+        "api",
         "-app-port",
         "5000",
         "-placement-address",
@@ -94,11 +81,10 @@ services:
     volumes:
       - "./components/local:/dapr/components"
       - "./components/config.yaml:/dapr/config.yaml"
-      - ./vault_dev_token:/vault/token
     depends_on:
-      - website
       - placement
-    network_mode: "service:website"
+      - api
+    network_mode: "service:api"
     env_file:
       - .env
 
@@ -122,15 +108,15 @@ services:
   # Redis state store
   ############################
   redis:
-    container_name: redis
+    container_name: redis_service
     image: "redis:6.0.7-alpine"
     command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
     ports:
-      - "6380:6379"
+      - "6379:6379"
     volumes:
       - ./redis.conf:/usr/local/etc/redis/redis.conf
-    networks:
-      - counter-net
+    #networks:
+    #  - counter-net
   ############################
   # SQL Server 2019
   ############################

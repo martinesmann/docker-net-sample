@@ -61,10 +61,13 @@ namespace web.Pages
             {
                 HttpClient client = _clientFactory.CreateClient("dapr");
 
-                var payload = JsonSerializer.Serialize(new { content = "some random value (" + Guid.NewGuid().ToString("D") + ")" });
+                var payload = JsonSerializer.Serialize(new { name = "notification", content = "some random value (" + Guid.NewGuid().ToString("D") + ")" });
+
                 var content = new StringContent(payload, Encoding.UTF8, "application/json");
                 var response = await client.PostAsync($"v1.0/publish/{PUBSUB_NAME}/notification", content);
+
                 _logger.LogInformation($"Notification send ({response.IsSuccessStatusCode}) - ({payload})");
+
                 if (!response.IsSuccessStatusCode)
                 {
                     _logger.LogInformation($"Notification error ({response.IsSuccessStatusCode}) - ({await response.Content.ReadAsStringAsync()})");
