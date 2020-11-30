@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using CloudNative.CloudEvents;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace web.Controllers
 {
@@ -44,7 +45,8 @@ namespace web.Controllers
             _logger.LogInformation("Notification received...");
             //_logger.LogInformation($"Cloud event {cloudEvent}");
 
-            _logger.LogInformation($"Cloud event {cloudEvent.Id} {cloudEvent.Type} {cloudEvent.DataContentType}");
+            _logger.LogInformation($"Cloud event {cloudEvent.Id} {cloudEvent.Type} {cloudEvent.DataContentType} ({ cloudEvent.Data})");
+
             return Ok();
         }
     }
