@@ -1,6 +1,9 @@
 ﻿using CloudNative.CloudEvents;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using web.Datacontext;
+using web.model;
 
 namespace web.Controllers
 {
@@ -9,10 +12,12 @@ namespace web.Controllers
     public class DaprController : ControllerBase
     {
         private readonly ILogger<DaprController> _logger;
+        private readonly IDbContextFactory<ApplicationContext> _contextFactory;
 
-        public DaprController(ILogger<DaprController> logger)
+        public DaprController(ILogger<DaprController> logger, IDbContextFactory<ApplicationContext> contextFactory)
         {
             _logger = logger;
+            _contextFactory = contextFactory;
             _logger.LogInformation("DaprController initialized...");
         }
 
@@ -39,6 +44,26 @@ namespace web.Controllers
         {
             _logger.LogInformation("Notification received...");
             _logger.LogInformation($"Cloud event {cloudEvent.Id} {cloudEvent.Type} {cloudEvent.DataContentType} ({ cloudEvent.Data})");
+
+            using (var context = _contextFactory.CreateDbContext())
+            {
+                if (context.Database.EnsureCreated())
+                {
+                    _logger.LogInformation($"Database created");
+                }
+
+                context.Messages.Add(
+                    new MessageModel
+                    {
+                        Data = cloudEvent.Data.ToString(),
+                        DataContentType = cloudEvent.DataContentType.Name,
+                        CloudEventId = cloudEvent.Id,
+                        CloudEventType = cloudEvent.Type
+                    });
+
+                context.SaveChanges();
+            }
+
             return Ok();
         }
     }

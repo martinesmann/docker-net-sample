@@ -4,12 +4,14 @@ using CloudNative.CloudEvents;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
+using web.Datacontext;
 
 namespace web
 {
@@ -25,6 +27,10 @@ namespace web
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+
+            //services.AddDbContextFactory<TodoContext>(options => options.UseSqlServer(@"Server=(localdb)\mssqllocaldb;Database=Test"));
+            services.AddDbContextFactory<ApplicationContext>(options => options.UseSqlServer("Server=db,1433;Database=test;User=sa;Password=Qwerty12;"));
+
             services.AddControllers(options =>
             {
                 options.InputFormatters.Insert(0, new CloudEventJsonInputFormatter());
