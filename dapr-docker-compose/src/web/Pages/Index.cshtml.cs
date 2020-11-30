@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 
@@ -14,14 +11,17 @@ namespace web.Pages
     public class IndexModel : PageModel
     {
         private readonly ILogger<IndexModel> _logger;
-        private readonly IHttpClientFactory _clientFactory;
+        private readonly HttpClient _apiClient;
+        private readonly HttpClient _daprClient;
+
 
         public string Message { get; private set; } = "PageModel in C#";
 
         public IndexModel(ILogger<IndexModel> logger, IHttpClientFactory clientFactory)
         {
             _logger = logger;
-            _clientFactory = clientFactory;
+            _apiClient = clientFactory.CreateClient("api");
+            _daprClient = clientFactory.CreateClient("dapr");
         }
 
         public async Task OnGet()
@@ -37,15 +37,14 @@ namespace web.Pages
 
             try
             {
-                HttpClient client = new HttpClient();
-                var response = await client.GetAsync("http://api:5000/Random");
+                var response = await _apiClient.GetAsync("/Random");
 
                 response.EnsureSuccessStatusCode();
                 Message = await response.Content.ReadAsStringAsync();
 
                 _logger.LogInformation($"Api data loaded ({Message})");
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 Message = ex.Message;
                 _logger.LogError(ex, "get api data error");
@@ -59,12 +58,10 @@ namespace web.Pages
 
             try
             {
-                HttpClient client = _clientFactory.CreateClient("dapr");
-
                 var payload = JsonSerializer.Serialize(new { name = "notification", content = "some random value (" + Guid.NewGuid().ToString("D") + ")" });
 
                 var content = new StringContent(payload, Encoding.UTF8, "application/json");
-                var response = await client.PostAsync($"v1.0/publish/{PUBSUB_NAME}/notification", content);
+                var response = await _daprClient.PostAsync($"v1.0/publish/{PUBSUB_NAME}/notification", content);
 
                 _logger.LogInformation($"Notification send ({response.IsSuccessStatusCode}) - ({payload})");
 
@@ -73,7 +70,7 @@ namespace web.Pages
                     _logger.LogInformation($"Notification error ({response.IsSuccessStatusCode}) - ({await response.Content.ReadAsStringAsync()})");
                 }
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 Message = ex.Message;
                 _logger.LogError(ex, "Notification send error");

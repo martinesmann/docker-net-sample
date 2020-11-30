@@ -28,6 +28,13 @@ namespace web
                 c.BaseAddress = new Uri("http://localhost:3500");
                 c.DefaultRequestHeaders.Add("User-Agent", typeof(Program).Assembly.GetName().Name);
             });
+
+            services.AddHttpClient("api", c =>
+            {
+                c.BaseAddress = new Uri("http://api:5000");
+                c.DefaultRequestHeaders.Add("User-Agent", typeof(Program).Assembly.GetName().Name);
+            });
+
             services.AddRazorPages();
         }
 

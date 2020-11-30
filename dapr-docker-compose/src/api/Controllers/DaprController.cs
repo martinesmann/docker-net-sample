@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using CloudNative.CloudEvents;
+﻿using CloudNative.CloudEvents;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 
 namespace web.Controllers
 {
@@ -43,10 +38,7 @@ namespace web.Controllers
         public ActionResult Notification(CloudEvent cloudEvent)
         {
             _logger.LogInformation("Notification received...");
-            //_logger.LogInformation($"Cloud event {cloudEvent}");
-
             _logger.LogInformation($"Cloud event {cloudEvent.Id} {cloudEvent.Type} {cloudEvent.DataContentType} ({ cloudEvent.Data})");
-
             return Ok();
         }
     }

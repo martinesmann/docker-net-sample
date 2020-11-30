@@ -54,6 +54,8 @@ services:
       - 5000
     ports:
       - "5000:5000"
+    depends_on:
+      - db
     #networks:
     #  - counter-net
     environment:
@@ -120,13 +122,13 @@ services:
   ############################
   # SQL Server 2019
   ############################
-  #db:
-  #  image: "mcr.microsoft.com/mssql/server"
-  #  ports:
-  #    - 1433:1433
-  #  environment:
-  #    SA_PASSWORD: "Qwerty12"
-  #    ACCEPT_EULA: "Y"
+  db:
+    image: "mcr.microsoft.com/mssql/server"
+    ports:
+      - 1433:1433
+    environment:
+      SA_PASSWORD: "Qwerty12"
+      ACCEPT_EULA: "Y"
 
 networks:
   counter-net:
