@@ -1,0 +1,39 @@
+﻿@page
+@model MessageModel
+@{
+    ViewData["Title"] = "Docker Compose sample";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Docker Compose | dapr (pub/sub)</h1>
+
+    <p>Return value from call to local container (GET 'http://api:5000/Data')
+        <br>hosted endpoint: http://localhost:5000/Data
+        <br>hosted endpoint (swagger): http://localhost:5000
+
+    </p>
+
+    <p>List of pub/sub messages recivied in the API</p>
+
+    @foreach (var item in Model.Messages)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Id)<br />
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CloudEventId)<br />
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DataContentType)<br />
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IsComplete)<br />
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Data)<br />
+            </td>
+        </tr>
+    }
+
+</div>
