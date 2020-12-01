@@ -30,8 +30,8 @@ namespace web.Controllers
             {
                 new {
                     pubsubname="messagebus",
-                    topic= "notification",
-                    route = "notification"
+                    topic= "notification_topic",
+                    route = "notification_post"
                 }
             };
 
@@ -39,7 +39,7 @@ namespace web.Controllers
         }
 
         //[Topic("messagebus", "notification")]
-        [HttpPost("/notification")]
+        [HttpPost("/notification_post")]
         public ActionResult Notification(CloudEvent cloudEvent)
         {
             _logger.LogInformation("Notification received...");

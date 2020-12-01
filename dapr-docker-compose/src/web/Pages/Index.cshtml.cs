@@ -55,13 +55,14 @@ namespace web.Pages
         {
             _logger.LogInformation("SendNotificationToApi called");
             string PUBSUB_NAME = "messagebus";
+            string TOPIC_NAME = "notification_topic";
 
             try
             {
                 var payload = JsonSerializer.Serialize(new { name = "notification", content = "some random value (" + Guid.NewGuid().ToString("D") + ")" });
 
                 var content = new StringContent(payload, Encoding.UTF8, "application/json");
-                var response = await _daprClient.PostAsync($"v1.0/publish/{PUBSUB_NAME}/notification", content);
+                var response = await _daprClient.PostAsync($"v1.0/publish/{PUBSUB_NAME}/{TOPIC_NAME}", content);
 
                 _logger.LogInformation($"Notification send ({response.IsSuccessStatusCode}) - ({payload})");
 
