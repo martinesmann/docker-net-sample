@@ -28,7 +28,7 @@ services:
         "website",
         "-app-port",
         "5003",
-        "-placement-address",
+        "-placement-host-address",
         "placement:6000",
         "-config",
         "/dapr/config.yaml",
@@ -73,7 +73,7 @@ services:
         "api",
         "-app-port",
         "5000",
-        "-placement-address",
+        "-placement-host-address",
         "placement:6000",
         "-config",
         "/dapr/config.yaml",
@@ -94,7 +94,7 @@ services:
   # Dapr placement service
   ############################
   placement:
-    image: "daprio/placement:0.10.0"
+    image: "daprio/dapr:0.10.0"
     container_name: "placement"
     command: ["./placement", "-port", "6000"]
     depends_on:
