@@ -1,6 +1,6 @@
 # Please refer https://aka.ms/HTTPSinContainer on how to setup an https developer certificate for your ASP .NET Core service.
 
-version: "3.7"
+version: "3.8"
 
 services:
   website:
@@ -18,18 +18,22 @@ services:
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
     volumes:
       - ~/.aspnet/https:/https:ro
+    networks:
+      - counter-net
 
   website_dapr:
-    image: "daprio/daprd:0.10.0"
+    image: "daprio/daprd:1.0.0-rc.1"
     command:
       [
         "./daprd",
         "-app-id",
         "website",
         "-app-port",
-        "5003",
+        "5002",
+        "-dapr-http-port",
+        "3500",
         "-placement-host-address",
-        "placement:6000",
+        "placement:50006",
         "-config",
         "/dapr/config.yaml",
         "-components-path",
@@ -56,8 +60,8 @@ services:
       - "5000:5000"
     depends_on:
       - db
-    #networks:
-    #  - counter-net
+    networks:
+      - counter-net
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:5000
@@ -65,7 +69,7 @@ services:
       - ~/.aspnet/https:/https:ro
 
   api_dapr:
-    image: "daprio/daprd:0.10.0"
+    image: "daprio/daprd:1.0.0-rc.1"
     command:
       [
         "./daprd",
@@ -73,8 +77,10 @@ services:
         "api",
         "-app-port",
         "5000",
+        "-dapr-http-port",
+        "3500",
         "-placement-host-address",
-        "placement:6000",
+        "placement:50006",
         "-config",
         "/dapr/config.yaml",
         "-components-path",
@@ -94,9 +100,9 @@ services:
   # Dapr placement service
   ############################
   placement:
-    image: "daprio/dapr:0.10.0"
+    image: "daprio/dapr"
     container_name: "placement"
-    command: ["./placement", "-port", "6000"]
+    command: ["./placement", "-port", "50006"]
     depends_on:
       - redis
     ports:
@@ -110,15 +116,15 @@ services:
   # Redis state store
   ############################
   redis:
-    container_name: redis_service
-    image: "redis:6.0.7-alpine"
+    image: "redis:alpine"
     command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    #command: ["redis-server"]
     ports:
       - "6379:6379"
     volumes:
       - ./redis.conf:/usr/local/etc/redis/redis.conf
-    #networks:
-    #  - counter-net
+    networks:
+      - counter-net
   ############################
   # SQL Server 2019
   ############################
