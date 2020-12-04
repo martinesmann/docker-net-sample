@@ -32,8 +32,6 @@ services:
         "5002",
         "-dapr-http-port",
         "3500",
-        "-placement-host-address",
-        "placement:50006",
         "-config",
         "/dapr/config.yaml",
         "-components-path",
@@ -43,7 +41,6 @@ services:
       - "./components/local:/dapr/components"
       - "./components/config.yaml:/dapr/config.yaml"
     depends_on:
-      - placement
       - website
     network_mode: "service:website"
     env_file:
@@ -79,8 +76,6 @@ services:
         "5000",
         "-dapr-http-port",
         "3500",
-        "-placement-host-address",
-        "placement:50006",
         "-config",
         "/dapr/config.yaml",
         "-components-path",
@@ -90,27 +85,10 @@ services:
       - "./components/local:/dapr/components"
       - "./components/config.yaml:/dapr/config.yaml"
     depends_on:
-      - placement
       - api
     network_mode: "service:api"
     env_file:
       - .env
-
-  ############################
-  # Dapr placement service
-  ############################
-  placement:
-    image: "daprio/dapr:edge"
-    container_name: "placement"
-    command: ["./placement", "-port", "50006"]
-    depends_on:
-      - redis
-    ports:
-      - "6000:6000"
-    env_file:
-      - .env
-    networks:
-      - counter-net
 
   ############################
   # Redis state store
