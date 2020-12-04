@@ -1,0 +1,134 @@
+# Please refer https://aka.ms/HTTPSinContainer on how to setup an https developer certificate for your ASP .NET Core service.
+
+version: "3.7"
+
+services:
+  website:
+    container_name: sample_website
+    build:
+      context: ./src/web
+      dockerfile: Dockerfile
+    ports:
+      - "443:5003"
+      - "80:5002"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:5003;http://+:5002
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=password1
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
+    volumes:
+      - ~/.aspnet/https:/https:ro
+
+  website_dapr:
+    image: "daprio/daprd:0.10.0"
+    command:
+      [
+        "./daprd",
+        "-app-id",
+        "website",
+        "-app-port",
+        "5003",
+        "-placement-address",
+        "placement:6000",
+        "-config",
+        "/dapr/config.yaml",
+        "-components-path",
+        "/dapr/components",
+      ]
+    volumes:
+      - "./components/local:/dapr/components"
+      - "./components/config.yaml:/dapr/config.yaml"
+    depends_on:
+      - placement
+      - website
+    network_mode: "service:website"
+    env_file:
+      - .env
+
+  api:
+    container_name: sample_api
+    build:
+      context: ./src/api
+      dockerfile: Dockerfile
+    expose:
+      - 5000
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+    #networks:
+    #  - counter-net
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5000
+    volumes:
+      - ~/.aspnet/https:/https:ro
+
+  api_dapr:
+    image: "daprio/daprd:0.10.0"
+    command:
+      [
+        "./daprd",
+        "-app-id",
+        "api",
+        "-app-port",
+        "5000",
+        "-placement-address",
+        "placement:6000",
+        "-config",
+        "/dapr/config.yaml",
+        "-components-path",
+        "/dapr/components",
+      ]
+    volumes:
+      - "./components/local:/dapr/components"
+      - "./components/config.yaml:/dapr/config.yaml"
+    depends_on:
+      - placement
+      - api
+    network_mode: "service:api"
+    env_file:
+      - .env
+
+  ############################
+  # Dapr placement service
+  ############################
+  placement:
+    image: "daprio/placement:0.10.0"
+    container_name: "placement"
+    command: ["./placement", "-port", "6000"]
+    depends_on:
+      - redis
+    ports:
+      - "6000:6000"
+    env_file:
+      - .env
+    networks:
+      - counter-net
+
+  ############################
+  # Redis state store
+  ############################
+  redis:
+    container_name: redis_service
+    image: "redis:6.0.7-alpine"
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    #networks:
+    #  - counter-net
+  ############################
+  # SQL Server 2019
+  ############################
+  db:
+    image: "mcr.microsoft.com/mssql/server"
+    ports:
+      - 1433:1433
+    environment:
+      SA_PASSWORD: "Qwerty12"
+      ACCEPT_EULA: "Y"
+
+networks:
+  counter-net:
