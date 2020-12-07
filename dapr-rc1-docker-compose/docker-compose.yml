@@ -8,17 +8,19 @@ services:
       context: ./src/web
       dockerfile: Dockerfile
     ports:
-      - "443:5003"
-      - "80:5002"
+      - "80:80"
+      #- "443:5003"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=https://+:5003;http://+:5002
-      - ASPNETCORE_Kestrel__Certificates__Default__Password=password1
-      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
+      - ASPNETCORE_URLS=http://+:80
+      #- ASPNETCORE_URLS=https://+:5003;http://+:5002
+      #- ASPNETCORE_Kestrel__Certificates__Default__Password=password1
+      #- ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
     volumes:
-      - ~/.aspnet/https:/https:ro
-    networks:
-      - counter-net
+      #- ~/.aspnet/https:/https:ro
+      - "redis-volume:/redis"
+      - "website-volume:/dapr"
+    #network_mode: "bridge"
 
   website_dapr:
     image: "daprio/daprd:1.0.0-rc.1"
@@ -28,20 +30,21 @@ services:
         "-app-id",
         "website",
         "-app-port",
-        "5002",
+        "80",
         "-dapr-http-port",
         "3500",
         "-config",
         "/dapr/config.yaml",
         "-components-path",
-        "/dapr/components",
+        "/dapr",
       ]
     volumes:
-      - "./components/local:/dapr/components"
-      - "./components/config.yaml:/dapr/config.yaml"
+      - "website-volume:/dapr"
     depends_on:
       - website
+      - redis
     network_mode: "service:website"
+    #network_mode: "bridge"
     env_file:
       - .env
 
@@ -57,13 +60,12 @@ services:
       - "5000:5000"
     depends_on:
       - db
-    networks:
-      - counter-net
+    #network_mode: "bridge"
+    volumes:
+      - "api-volume:/dapr"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:5000
-    volumes:
-      - ~/.aspnet/https:/https:ro
 
   api_dapr:
     image: "daprio/daprd:1.0.0-rc.1"
@@ -79,14 +81,17 @@ services:
         "-config",
         "/dapr/config.yaml",
         "-components-path",
-        "/dapr/components",
+        "/dapr",
       ]
     volumes:
-      - "./components/local:/dapr/components"
-      - "./components/config.yaml:/dapr/config.yaml"
+      - "api-volume:/dapr"
+      #- "./components/local:/dapr"
+      #- "./components/config.yaml:/dapr/config.yaml"
     depends_on:
       - api
+      - redis
     network_mode: "service:api"
+    #network_mode: "bridge"
     env_file:
       - .env
 
@@ -95,13 +100,14 @@ services:
   ############################
   redis:
     image: "redis:alpine"
-    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    command: ["redis-server", "/redis/redis.conf"]
     ports:
       - "6379:6379"
     volumes:
-      - ./redis.conf:/usr/local/etc/redis/redis.conf
-    networks:
-      - counter-net
+      - "redis-volume:/redis"
+      #- ./redis.conf:/usr/local/etc/redis/redis.conf
+    #network_mode: "bridge"
+
   ############################
   # SQL Server 2019
   ############################
@@ -112,8 +118,9 @@ services:
     environment:
       SA_PASSWORD: "Qwerty12"
       ACCEPT_EULA: "Y"
-    networks:
-      - counter-net
+    #network_mode: "bridge"
 
-networks:
-  counter-net:
+volumes:
+  website-volume:
+  api-volume:
+  redis-volume:
