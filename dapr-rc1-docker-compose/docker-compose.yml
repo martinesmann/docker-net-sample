@@ -37,6 +37,12 @@ services:
         "/dapr/config.yaml",
         "-components-path",
         "/dapr",
+        "-metrics-port",
+        "9090",
+        "-profile-port",
+        "7777",
+        "-dapr-grpc-port",
+        "50001",
       ]
     volumes:
       - "website-volume:/dapr"
@@ -84,11 +90,17 @@ services:
         "-app-port",
         "5000",
         "-dapr-http-port",
-        "3500",
+        "3501",
         "-config",
         "/dapr/config.yaml",
         "-components-path",
         "/dapr",
+        "-metrics-port",
+        "9091",
+        "-profile-port",
+        "7778",
+        "-dapr-grpc-port",
+        "50002",
       ]
     volumes:
       - "api-volume:/dapr"
@@ -128,10 +140,22 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.25"
-          memory: 1GB
+          cpus: "1"
+          memory: 2GB
 
 volumes:
   website-volume:
+    driver: azure_file
+    driver_opts:
+      share_name: websitefileshare
+      storage_account_name: dockerplaygound
   api-volume:
+    driver: azure_file
+    driver_opts:
+      share_name: apifileshare
+      storage_account_name: dockerplaygound
   redis-volume:
+    driver: azure_file
+    driver_opts:
+      share_name: redisfileshare
+      storage_account_name: dockerplaygound
