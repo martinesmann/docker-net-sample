@@ -15,6 +15,11 @@ services:
     volumes:
       - "redis-volume:/redis"
       - "website-volume:/dapr"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 1GB
 
   website-dapr:
     container_name: website-dapr
@@ -39,8 +44,11 @@ services:
       - website
       - redis
     network_mode: "service:website"
-    env_file:
-      - .env
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 1GB
 
   api:
     container_name: api
@@ -59,6 +67,11 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:5000
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 1GB
 
   api-dapr:
     container_name: api-dapr
@@ -83,9 +96,11 @@ services:
       - api
       - redis
     network_mode: "service:api"
-    #network_mode: "bridge"
-    env_file:
-      - .env
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 1GB
 
   ############################
   # Redis state store
@@ -110,6 +125,11 @@ services:
     environment:
       SA_PASSWORD: "Qwerty12"
       ACCEPT_EULA: "Y"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 1GB
 
 volumes:
   website-volume:
