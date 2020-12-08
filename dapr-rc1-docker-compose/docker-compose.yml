@@ -48,7 +48,6 @@ services:
     depends_on:
       - website
       - redis
-    #network_mode: "service:website"
     links:
       - redis
     deploy:
@@ -107,7 +106,6 @@ services:
     depends_on:
       - api
       - redis
-    #network_mode: "service:api"
     links:
       - redis
     deploy:
