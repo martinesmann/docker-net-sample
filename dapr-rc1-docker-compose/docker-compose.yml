@@ -2,6 +2,7 @@ version: "3.8"
 
 services:
   website:
+    domainname: "dapr-aci-demo"
     container_name: website
     image: esmann.azurecr.io/samples/web:latest
     build:
@@ -14,7 +15,7 @@ services:
       - ASPNETCORE_URLS=http://+:80
     volumes:
       - "redis-volume:/redis"
-      - "website-volume:/dapr"
+      - "dapr-components-volume:/dapr"
     deploy:
       resources:
         limits:
@@ -43,13 +44,12 @@ services:
         "-dapr-grpc-port",
         "50001",
       ]
+    network_mode: "service:website"
     volumes:
-      - "website-volume:/dapr"
+      - "dapr-components-volume:/dapr"
     depends_on:
       - website
-      - redis
-    links:
-      - redis
+      - redis-server
     deploy:
       resources:
         limits:
@@ -69,7 +69,7 @@ services:
     depends_on:
       - db
     volumes:
-      - "api-volume:/dapr"
+      - "dapr-components-volume:/dapr"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:5000
@@ -100,14 +100,15 @@ services:
         "7778",
         "-dapr-grpc-port",
         "50002",
+        "-log-level",
+        "debug",
       ]
+    network_mode: "service:api"
     volumes:
-      - "api-volume:/dapr"
+      - "dapr-components-volume:/dapr"
     depends_on:
       - api
-      - redis
-    links:
-      - redis
+      - redis-server
     deploy:
       resources:
         limits:
@@ -117,13 +118,17 @@ services:
   ############################
   # Redis state store
   ############################
-  redis:
-    container_name: redis
-    image: "redis:alpine"
-    #command: ["redis-server", "/redis/redis.conf"]
-    command: ["redis-server"]
+  redis-server:
+    container_name: redis-server
+    image: "redis:latest"
+    command: ["redis-server", "/redis/redis.conf"]
+    #command: ["redis-server"]
+    expose:
+      - 6379
     ports:
-      - "6379:6379"
+      - 6379:6379
+    #ports:
+    #  - "6379:6379"
     volumes:
       - "redis-volume:/redis"
 
@@ -144,19 +149,18 @@ services:
           cpus: "1"
           memory: 2GB
 
+  ############################
+  # Azure Volumes (Azure File Shares)
+  # https://docs.docker.com/engine/context/aci-integration/
+  ############################
 volumes:
-  website-volume:
-    driver: azure_file
-    driver_opts:
-      share_name: websitefileshare
-      storage_account_name: dockerplaygound
-  api-volume:
-    driver: azure_file
-    driver_opts:
-      share_name: apifileshare
-      storage_account_name: dockerplaygound
+  dapr-components-volume:
+  #  driver: azure_file
+  #  driver_opts:
+  #    share_name: daprfileshare
+  #    storage_account_name: dockerplaygound
   redis-volume:
-    driver: azure_file
-    driver_opts:
-      share_name: redisfileshare
-      storage_account_name: dockerplaygound
+  #  driver: azure_file
+  #  driver_opts:
+  #    share_name: redisfileshare
+  #    storage_account_name: dockerplaygound

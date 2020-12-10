@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
+using StackExchange.Redis;
 
 namespace web.Pages
 {
@@ -15,7 +16,12 @@ namespace web.Pages
         private readonly HttpClient _daprClient;
 
 
-        public string Message { get; private set; } = "PageModel in C#";
+        public string MessageApiData { get; private set; } = "ApiData";
+
+        public string MessagePubSub { get; private set; } = "PubSub";
+
+        public string MessageRedis { get; private set; } = "Redis";
+
 
         public IndexModel(ILogger<IndexModel> logger, IHttpClientFactory clientFactory)
         {
@@ -29,6 +35,7 @@ namespace web.Pages
             _logger.LogInformation("Index called");
             await GetApiData();
             await SendNotificationToApi();
+            await RedisConnection();
         }
 
         private async Task GetApiData()
@@ -40,13 +47,13 @@ namespace web.Pages
                 var response = await _apiClient.GetAsync("/Random");
 
                 response.EnsureSuccessStatusCode();
-                Message = await response.Content.ReadAsStringAsync();
+                MessageApiData = await response.Content.ReadAsStringAsync();
 
-                _logger.LogInformation($"Api data loaded ({Message})");
+                _logger.LogInformation($"Api data loaded ({MessageApiData})");
             }
             catch (Exception ex)
             {
-                Message = ex.Message;
+                MessageApiData = ex.Message;
                 _logger.LogError(ex, "get api data error");
             }
         }
@@ -65,16 +72,38 @@ namespace web.Pages
                 var response = await _daprClient.PostAsync($"v1.0/publish/{PUBSUB_NAME}/{TOPIC_NAME}", content);
 
                 _logger.LogInformation($"Notification send ({response.IsSuccessStatusCode}) - ({payload})");
-
+                MessagePubSub = $"Notification send ({response.IsSuccessStatusCode}) - ({payload})";
                 if (!response.IsSuccessStatusCode)
                 {
                     _logger.LogInformation($"Notification error ({response.IsSuccessStatusCode}) - ({await response.Content.ReadAsStringAsync()})");
+                    MessagePubSub = $"Notification error ({response.IsSuccessStatusCode}) - ({await response.Content.ReadAsStringAsync()})";
                 }
             }
             catch (Exception ex)
             {
-                Message = ex.Message;
+                MessagePubSub = ex.Message;
                 _logger.LogError(ex, "Notification send error");
+            }
+        }
+
+        private async Task RedisConnection()
+        {
+            _logger.LogInformation("RedisConnection called");
+            string REDIS_SERVER = "redis-server:6379";
+            try
+            {
+                using ConnectionMultiplexer muxer = ConnectionMultiplexer.Connect($"{REDIS_SERVER},password=S0m3P@$$w0rd");
+                IDatabase conn = muxer.GetDatabase();
+                var pong = await conn.PingAsync(CommandFlags.None);
+                MessageRedis = $"Redis Ping -> ({pong}) to ({REDIS_SERVER})";
+
+                _logger.LogInformation($"Redis Ping -> ({pong})");
+            }
+            catch (Exception ex)
+            {
+                MessageRedis = ex.Message;
+                _logger.LogInformation($"Redis error ({ex.Message})");
+                _logger.LogError(ex, $"Redis error ({ex.Message})");
             }
         }
     }

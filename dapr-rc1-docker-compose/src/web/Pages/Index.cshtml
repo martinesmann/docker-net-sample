@@ -9,9 +9,22 @@
     <p>multi-container .net apps solution (web + api) using Docker Compose</p>
 
     <p>
-        Return value from call to local continer(GET 'http://api:5000/Random')<br />
-        <b> @Model.Message </b>
+        Api Data: Return value from call to local continer(GET 'http://api:5000/Random')<br />
+        <b> @Model.MessageApiData </b>
     </p>
+
+    <p>
+        PubSub: Call dapr pub/sub(POST 'http://localhost:3500')<br />
+        <b> @Model.MessagePubSub </b>
+    </p>
+
+    <p>
+        Redis: Call Redis Cache<br />
+        <b> @Model.MessageRedis </b>
+    </p>
+
+
+
     <p>Learn more:
 
     <p><a href="https://docs.microsoft.com/en-us/visualstudio/containers/tutorial-multicontainer?view=vs-2019">Tutorial:
