@@ -106,6 +106,7 @@ namespace frontend.Controllers
             string weatherData;
             while (!Program.Cache.TryTake(out weatherData, (int)TimeSpan.FromSeconds(5).TotalMilliseconds))
             {
+                // please note that using Program.Cache is a hack (Should be replaced with SignalR)
                 await Task.Delay(1000);
             }
 
