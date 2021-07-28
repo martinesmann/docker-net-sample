@@ -1,0 +1,177 @@
+version: "3"
+
+services:
+  ###########################
+  # Frontend
+  ###########################
+  frontend-service:
+    container_name: frontend
+    image: frwrd.azurecr.io/demo/frontend:debug
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5001:5001"
+      - "5000:5000"
+    expose: 
+      - 5001
+      - 5000
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=https://+:5001;http://+:5000
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=password
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1.0GB
+
+  ###########################
+  # dapr for Frontend 
+  ###########################
+  frontend-dapr:
+    container_name: frontend-dapr
+    image: frwrd.azurecr.io/demo/daprd:latest
+    build:
+      context: docker/dapr
+      dockerfile: Dockerfile
+    ports:
+      - "9000:9000"
+      - "50001:50001"
+    expose: 
+      - 9000
+      - 50001
+    labels:
+      kompose.image-pull-policy: Always
+    command:
+      [
+        "./daprd",
+        "-app-id",
+        "frontend-service",
+        "-app-port",
+        "5000",
+        "-dapr-http-port",
+        "9000",
+        "-config",
+        "/dapr/config.yaml",
+        "-components-path",
+        "/dapr/components",
+        "-metrics-port",
+        "9090",
+        "-profile-port",
+        "7777",
+        "-dapr-grpc-port",
+        "50001",
+        "-log-level",
+        "debug",
+      ]
+    #network_mode: "service:frontend-service"
+    depends_on:
+      - frontend-service
+      - redis
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 0.2GB
+
+          
+  ###########################
+  # Backend
+  ###########################
+  backend-service:
+    container_name: backend
+    image: frwrd.azurecr.io/demo/backend:debug
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    ports:
+      - "5003:5003"
+      - "5002:5002"
+    expose: 
+     - 5003
+     - 5002
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=https://+:5003;http://+:5002
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=password
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1.0GB
+
+  ###########################
+  # dapr for Backend 
+  ###########################
+  backend-dapr:
+    container_name: backend-dapr
+    image: frwrd.azurecr.io/demo/daprd:latest
+    build:
+      context: docker/dapr
+      dockerfile: Dockerfile
+    ports:
+      - "9001:9001"
+      - "50002:50002"
+    expose: 
+      - 9001
+      - 50002
+    labels:
+      kompose.image-pull-policy: Always
+    command:
+      [
+        "./daprd",
+        "-app-id",
+        "backend-service",
+        "-app-port",
+        "5002",
+        "-dapr-http-port",
+        "9001",
+        "-config",
+        "/dapr/config.yaml",
+        "-components-path",
+        "/dapr/components",
+        "-metrics-port",
+        "9091",
+        "-profile-port",
+        "7778",
+        "-dapr-grpc-port",
+        "50002",
+        "-log-level",
+        "debug",
+      ]
+    #network_mode: "service:backend-service"
+    depends_on:
+      - backend-service
+      - redis
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 0.2GB
+
+ 
+  
+  ############################
+  # Redis
+  ############################
+  redis:
+    container_name: redis-server
+    image: frwrd.azurecr.io/demo/redis:latest
+    build:
+      context: docker/redis
+      dockerfile: Dockerfile
+    labels:
+      kompose.image-pull-policy: Always
+    command: ["redis-server", "/redis/redis.conf"]
+    ports:
+      - 6380:6380
+    expose:
+      - 6380
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 0.1GB

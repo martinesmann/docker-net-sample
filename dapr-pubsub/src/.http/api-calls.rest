@@ -1,0 +1,11 @@
+@hostname = localhost
+@port = 5001
+@host = {{hostname}}:{{port}}
+@contentType = application/json
+
+#GET https://{{host}}/meetings HTTP/1.1
+#Accept: {{contentType}}
+
+
+GET http://localhost:9001/v1.0/invoke/frontend-service/method/WeatherForecast HTTP/1.1
+#Accept: {{contentType}}

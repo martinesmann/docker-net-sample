@@ -103,7 +103,11 @@ services:
         "-log-level",
         "debug",
       ]
-    network_mode: "service:api"
+    #network_mode: "service:api"
+    ports:
+      - "3500:3500"
+    expose:
+      - 3500
     volumes:
       - "dapr-components-volume:/dapr"
     depends_on:
