@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,8 +10,11 @@ using Microsoft.Extensions.Logging;
 
 namespace frontend
 {
+
     public class Program
     {
+        public static BlockingCollection<string> Cache { get; set; } = new BlockingCollection<string>();
+
         public static void Main(string[] args)
         {
             CreateHostBuilder(args).Build().Run();

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Newtonsoft.Json.Serialization;
 
 namespace frontend
 {
@@ -23,7 +24,11 @@ namespace frontend
         {
             services
                 .AddControllersWithViews()
-                .AddNewtonsoftJson(); ;
+                .AddNewtonsoftJson(options =>
+                {
+                    options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+                })
+                .AddDapr();
 
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
@@ -35,6 +40,8 @@ namespace frontend
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseCloudEvents();
+
             app.UseDeveloperExceptionPage();
 
             // if (env.IsDevelopment())
@@ -60,6 +67,8 @@ namespace frontend
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller}/{action=Index}/{id?}");
+                endpoints.MapSubscribeHandler();
+
             });
 
             app.UseSpa(spa =>

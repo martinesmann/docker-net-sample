@@ -103,7 +103,16 @@ namespace frontend.Controllers
 
             await daprClient.PublishEventAsync<OrderData>("pubsub", "newOrder", data);
 
-            return Ok();
+            string weatherData;
+            while (!Program.Cache.TryTake(out weatherData, (int)TimeSpan.FromSeconds(5).TotalMilliseconds))
+            {
+                await Task.Delay(1000);
+            }
+
+            _logger.LogInformation("========> WeatherForecat got data from pubsub {weatherData}", weatherData);
+
+            var obj = JsonConvert.DeserializeObject<dynamic>(weatherData);
+            return Ok(obj);
         }
     }
 }
