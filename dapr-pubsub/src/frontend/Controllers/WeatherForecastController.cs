@@ -40,33 +40,34 @@ namespace frontend.Controllers
             // .ToArray();
 
             //// raw api call
-            var client = new HttpClient();
-            client.BaseAddress = new Uri("http://backend-service:5002");
+            // var client = new HttpClient();
+            // client.BaseAddress = new Uri("http://backend-service:5002");
 
-            var response = await client.GetAsync("/WeatherForecast");
-            var data = await response.Content.ReadAsStringAsync();
-            _logger.LogWarning(data);
-            var obj = JsonConvert.DeserializeObject<dynamic>(data);
-            return Ok(obj);
+            // var response = await client.GetAsync("/WeatherForecast");
+            // var data = await response.Content.ReadAsStringAsync();
+            // _logger.LogWarning(data);
+            // var obj = JsonConvert.DeserializeObject<dynamic>(data);
+            // return Ok(obj);
 
             //// dapr invocation 
-            // try
-            // {
-            //     HttpClient client = new HttpClient();
-            //     int daprPort = 9000;
-            //     string applicationId = "backend-service";
-            //     string methodName = "WeatherForecast";
-            //     var response = await client.GetAsync($"http://localhost:{daprPort}/v1.0/invoke/{applicationId}/method/{methodName}");
-            //     var data = await response.Content.ReadAsStringAsync();
-            //     var obj = JsonConvert.DeserializeObject<dynamic>(data);
-            //     return Ok(obj);
-            // }
-            // catch (System.Exception ex)
-            // {
-            //     _logger.LogError(ex, "dapr invocation failed");
+            try
+            {
+                HttpClient client = new HttpClient();
+                string darpSitecar = "localhost";
+                int daprPort = 3500;
+                string applicationId = "backend-service";
+                string methodName = "WeatherForecast";
+                var response = await client.GetAsync($"http://{darpSitecar}:{daprPort}/v1.0/invoke/{applicationId}/method/{methodName}");
+                var data = await response.Content.ReadAsStringAsync();
+                var obj = JsonConvert.DeserializeObject<dynamic>(data);
+                return Ok(obj);
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError(ex, "dapr invocation failed");
 
-            //     return Ok(ex.Message);
-            // }
+                return Ok(ex.Message);
+            }
         }
     }
 }

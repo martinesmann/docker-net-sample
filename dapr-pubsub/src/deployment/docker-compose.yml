@@ -13,9 +13,11 @@ services:
     ports:
       - "5001:5001"
       - "5000:5000"
-    expose: 
-      - 5001
-      - 5000
+    networks:
+      - hello-dapr
+    #expose: 
+    #  - 5001
+    #  - 5000
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=https://+:5001;http://+:5000
@@ -36,12 +38,12 @@ services:
     build:
       context: docker/dapr
       dockerfile: Dockerfile
-    ports:
-      - "9000:9000"
-      - "50001:50001"
-    expose: 
-      - 9000
-      - 50001
+    #ports:
+      #- "9000:9000"
+      #- "50001:50001"
+    #expose: 
+    #  - 9000
+    #  - 50001
     labels:
       kompose.image-pull-policy: Always
     command:
@@ -51,22 +53,22 @@ services:
         "frontend-service",
         "-app-port",
         "5000",
-        "-dapr-http-port",
-        "9000",
+        #"-dapr-http-port",
+        #"9000",
         "-config",
         "/dapr/config.yaml",
         "-components-path",
         "/dapr/components",
-        "-metrics-port",
-        "9090",
-        "-profile-port",
-        "7777",
-        "-dapr-grpc-port",
-        "50001",
+        #"-metrics-port",
+        #"9090",
+        #"-profile-port",
+        #"7777",
+        #"-dapr-grpc-port",
+        #"50001",
         "-log-level",
         "debug",
       ]
-    #network_mode: "service:frontend-service"
+    network_mode: "service:frontend-service"
     depends_on:
       - frontend-service
       - redis
@@ -89,9 +91,11 @@ services:
     ports:
       - "5003:5003"
       - "5002:5002"
-    expose: 
-     - 5003
-     - 5002
+    networks:
+      - hello-dapr
+    #expose: 
+    # - 5003
+    # - 5002
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=https://+:5003;http://+:5002
@@ -112,12 +116,12 @@ services:
     build:
       context: docker/dapr
       dockerfile: Dockerfile
-    ports:
-      - "9001:9001"
-      - "50002:50002"
-    expose: 
-      - 9001
-      - 50002
+    #ports:
+    #  - "9001:9001"
+    #  - "50002:50002"
+    #expose: 
+    #  - 9001
+    #  - 50002
     labels:
       kompose.image-pull-policy: Always
     command:
@@ -127,22 +131,22 @@ services:
         "backend-service",
         "-app-port",
         "5002",
-        "-dapr-http-port",
-        "9001",
+        #"-dapr-http-port",
+        #"9001",
         "-config",
         "/dapr/config.yaml",
         "-components-path",
         "/dapr/components",
-        "-metrics-port",
-        "9091",
-        "-profile-port",
-        "7778",
-        "-dapr-grpc-port",
-        "50002",
+        #"-metrics-port",
+        #"9091",
+        #"-profile-port",
+        #"7778",
+        #"-dapr-grpc-port",
+        #"50002",
         "-log-level",
         "debug",
       ]
-    #network_mode: "service:backend-service"
+    network_mode: "service:backend-service"
     depends_on:
       - backend-service
       - redis
@@ -168,10 +172,18 @@ services:
     command: ["redis-server", "/redis/redis.conf"]
     ports:
       - 6380:6380
-    expose:
-      - 6380
+    #expose:
+    #  - 6380
     deploy:
       resources:
         limits:
           cpus: "0.25"
           memory: 0.1GB
+    networks:
+      - hello-dapr
+      
+############################
+# Networks
+############################
+networks:
+  hello-dapr:
