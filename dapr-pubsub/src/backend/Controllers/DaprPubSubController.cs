@@ -33,7 +33,8 @@ namespace backend.Controllers
         public async Task<ActionResult> CreateOrder(Order order)
         {
             await Task.Delay(1);
-            _logger.LogInformation("order {order}", order);
+            var orderDataLength = order.ProductId.Length;
+            _logger.LogInformation("========> order data length (chars): {orderDataLength}", orderDataLength);
 
 
             var rng = new Random();

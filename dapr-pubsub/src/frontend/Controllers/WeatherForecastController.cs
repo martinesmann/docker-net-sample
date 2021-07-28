@@ -95,7 +95,7 @@ namespace frontend.Controllers
             var data = new OrderData
             {
                 OrderId = "123456",
-                ProductId = "67890",
+                ProductId = new String('*', 10_000_000),
                 Amount = 2
             };
 

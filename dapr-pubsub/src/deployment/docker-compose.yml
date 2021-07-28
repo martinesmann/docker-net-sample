@@ -50,6 +50,8 @@ services:
         "/dapr/components",
         "-log-level",
         "debug",
+        "-dapr-http-max-request-size",
+        "16"
       ]
     network_mode: "service:frontend-service"
     depends_on:
@@ -111,6 +113,8 @@ services:
         "/dapr/components",
         "-log-level",
         "debug",
+        "-dapr-http-max-request-size",
+        "16"
       ]
     network_mode: "service:backend-service"
     depends_on:
