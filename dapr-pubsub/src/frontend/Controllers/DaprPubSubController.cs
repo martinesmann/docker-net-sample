@@ -28,7 +28,20 @@ namespace frontend.Controllers
             _logger.LogInformation("weather {weather}", weather);
             Program.Cache.Add(weather.Json);
             return Ok();
+        }
 
+        [Topic("pubsub", "newAssetReady")]
+        [HttpPost("/asset")]
+        public async Task<ActionResult> AssetReady(AssetCreatedModel model)
+        {
+            await Task.Delay(1);
+            var etag = model.AssetEtag;
+
+            _logger.LogInformation("======> Asset Ready {etag}", etag);
+
+            Program.AssetCache.Add(model);
+
+            return Ok();
         }
 
 

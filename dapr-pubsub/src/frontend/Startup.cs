@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json.Serialization;
 
 namespace frontend
@@ -35,6 +36,17 @@ namespace frontend
             {
                 configuration.RootPath = "ClientApp/build";
             });
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy("uploadPolicy", builder =>
+                {
+                    builder
+                        .AllowAnyOrigin()
+                        .WithMethods("POST", "GET", "PUT", "DELETE")
+                        .WithHeaders(HeaderNames.ContentType);
+                });
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -56,6 +68,8 @@ namespace frontend
             // }
 
             //app.UseHttpsRedirection();
+
+            app.UseCors("uploadPolicy");
 
             app.UseStaticFiles();
             app.UseSpaStaticFiles();

@@ -62,5 +62,31 @@ namespace backend.Controllers
 
             return Ok();
         }
+
+        [Topic("pubsub", "newAsset")]
+        [HttpPost("/asset")]
+        public async Task<ActionResult> CreateAsset(Asset asset)
+        {
+            await Task.Delay(1);
+
+            var dataLength = asset.Data.Length;
+            _logger.LogInformation("========> asset data length (bytes): {dataLength}", dataLength);
+
+
+            // TODO:  validate, scale, upload to blob storage
+
+            var data = new AssetData
+            {
+                AssetEtag = Guid.NewGuid().ToString(),
+                FileName = asset.FileName,
+                AssetTemplateName = $"{asset.FileName}_#width#_#height#.jpeg"
+            };
+
+            _logger.LogInformation("====> Sending asset data to frontend {data}", data);
+            var daprClient = new DaprClientBuilder().Build();
+            await daprClient.PublishEventAsync<AssetData>("pubsub", "newAssetReady", data);
+
+            return Ok();
+        }
     }
 }
