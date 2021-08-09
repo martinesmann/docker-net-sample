@@ -67,17 +67,21 @@ namespace frontend.Controllers
             /// Dapr method invocation
             /// 
 
-            /*
+
             try
             {
+                _logger.LogInformation("=====> Dapr method invocation - start");
+
                 var client = new HttpClient();
                 string darpSitecar = "localhost";
                 int daprPort = 3500;
                 string applicationId = "backend-service";
-                string methodName = "WeatherForecast";
+                string methodName = "WeatherForecast/api/asset/weather";//"WeatherForecast";
                 var response = await client.GetAsync($"http://{darpSitecar}:{daprPort}/v1.0/invoke/{applicationId}/method/{methodName}");
                 var data = await response.Content.ReadAsStringAsync();
                 var obj = JsonConvert.DeserializeObject<dynamic>(data);
+                _logger.LogInformation("=====> Dapr method invocation - done");
+
                 return Ok(obj);
             }
             catch (System.Exception ex)
@@ -85,35 +89,36 @@ namespace frontend.Controllers
                 _logger.LogError(ex, "dapr invocation failed");
                 return Ok(ex.Message);
             }
-            */
+
 
 
             /// 
             /// Dapr pubsub
             /// 
+            /*
+                        var data = new OrderData
+                        {
+                            OrderId = "123456",
+                            ProductId = new String('*', 10),
+                            Amount = 2
+                        };
 
-            var data = new OrderData
-            {
-                OrderId = "123456",
-                ProductId = new String('*', 10_000_000),
-                Amount = 2
-            };
+                        var daprClient = new DaprClientBuilder().Build();
 
-            var daprClient = new DaprClientBuilder().Build();
+                        await daprClient.PublishEventAsync<OrderData>("pubsub", "newOrder", data);
 
-            await daprClient.PublishEventAsync<OrderData>("pubsub", "newOrder", data);
+                        string weatherData;
+                        while (!Program.Cache.TryTake(out weatherData, (int)TimeSpan.FromSeconds(5).TotalMilliseconds))
+                        {
+                            // please note that using Program.Cache is a hack (Should be replaced with SignalR)
+                            await Task.Delay(1000);
+                        }
 
-            string weatherData;
-            while (!Program.Cache.TryTake(out weatherData, (int)TimeSpan.FromSeconds(5).TotalMilliseconds))
-            {
-                // please note that using Program.Cache is a hack (Should be replaced with SignalR)
-                await Task.Delay(1000);
-            }
+                        _logger.LogInformation("========> WeatherForecat got data from pubsub {weatherData}", weatherData);
 
-            _logger.LogInformation("========> WeatherForecat got data from pubsub {weatherData}", weatherData);
-
-            var obj = JsonConvert.DeserializeObject<dynamic>(weatherData);
-            return Ok(obj);
+                        var obj = JsonConvert.DeserializeObject<dynamic>(weatherData);
+                        return Ok(obj);
+                        */
         }
     }
 }
